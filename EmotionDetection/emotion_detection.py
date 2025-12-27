@@ -34,31 +34,29 @@ def emotion_detector(text_to_analyze):
     header = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
     # Send a POST request to the API with the text and headers
     response = requests.post(url, json = myobj, headers=header, timeout = 10)
-    # Parsing the json response from the API
-    formatted_response = json.loads(response.text)
-    # Extracting data for formatting
-    data = formatted_response["emotionPredictions"][0]["emotion"]
-    final_response = {
-        'anger': data["anger"],
-        'disgust': data["disgust"],
-        'fear': data["fear"],
-        'joy': data["joy"],
-        'sadness': data["sadness"],
-        'dominant_emotion': max(data, key = data.get)
-        }
-    return final_response
-
-"""    
-    # If the response status code is 200, extract the label and score from the response
+    # Check if the reponse code is 200 for error handling
     if response.status_code == 200:
+        # Parsing the json response from the API
+        formatted_response = json.loads(response.text)
+        # Extracting data for formatting
+        data = formatted_response["emotionPredictions"][0]["emotion"]
         final_response = {
-            "label": formatted_response['documentSentiment']['label'],
-            "score": formatted_response['documentSentiment']['score']
-        }
-    elif response.status_code == 500:
-        final_response = {"label": None, "score": None}
-    else:
-        final_response = {"label": None, "score": None}
-    # Return the response text from the API
-    return final_response
-"""
+            'anger': data["anger"],
+            'disgust': data["disgust"],
+            'fear': data["fear"],
+            'joy': data["joy"],
+            'sadness': data["sadness"],
+            'dominant_emotion': max(data, key = data.get)
+            }
+        return final_response
+    # Check if the error code is 400 to identify blank entries
+    elif response.status_code == 400:
+        final_response = {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+            }
+        return final_response
